@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String   @id @default(cuid())
+  email    String   @unique
+  username String   @unique
+  password String
+  role     UserRole @default(USER)
+
+  // Relations
+  posts    Post[]
+  comments Comment[]
+  likes    Like[]
+
+  files    File[]  @relation("UserFiles")
+  avatar   File?   @relation("UserAvatar", fields: [avatarId], references: [id])
+  avatarId String? @unique
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Post {
+  id        String  @id @default(cuid())
+  title     String
+  content   String
+  published Boolean @default(false)
+
+  // Relations
+  author   User      @relation(fields: [authorId], references: [id])
+  authorId String
+  comments Comment[]
+  likes    Like[]
+  images   File[]    @relation("PostImages")
+
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+
+  @@map("posts")
+}
+
+model Comment {
+  id       String  @id @default(cuid())
+  content  String
+  approved Boolean @default(true)
+
+  // Relations
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId String
+
+  post   Post   @relation(fields: [postId], references: [id])
+  postId String
+
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  parentId String?
+  replies  Comment[] @relation("CommentReplies")
+
+  likes Like[]
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("comments")
+}
+
+model Like {
+  id String @id @default(cuid())
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  post   Post?   @relation(fields: [postId], references: [id])
+  postId String?
+
+  comment   Comment? @relation(fields: [commentId], references: [id])
+  commentId String?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  // Уникальный индекс чтобы пользователь мог лайкнуть пост/комментарий только один раз
+  @@unique([userId, postId, commentId])
+  @@map("likes")
+}
+
+model File {
+  id           String  @id @default(cuid())
+  key          String  @unique
+  url          String
+  originalName String
+  mimeType     String
+  size         Int
+  isPublic     Boolean
+
+  //Relations
+  uploader   User?   @relation("UserFiles", fields: [uploaderId], references: [id])
+  uploaderId String?
+  avatarOf   User?   @relation("UserAvatar")
+
+  post   Post?   @relation("PostImages", fields: [postId], references: [id])
+  postId String?
+
+  createdAt DateTime @default(now())
+
+  @@map("files")
+}
+
+enum UserRole {
+  USER
+  EDITOR
+  ADMIN
+}
