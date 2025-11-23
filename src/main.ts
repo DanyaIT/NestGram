@@ -12,11 +12,16 @@ async function bootstrap(): Promise<void> {
     defaultVersion: [VERSION_NEUTRAL],
   });
 
-  const config = new DocumentBuilder().setTitle('API').setDescription('Documentation').setVersion('0.0.1').build();
+  const config = new DocumentBuilder()
+    .setTitle('API')
+    .setDescription('Documentation')
+    .setVersion('0.0.1')
+    .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(configService.get('PORT') || 3000);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();

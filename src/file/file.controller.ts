@@ -14,6 +14,7 @@ import {
 import { FileService } from './file.service';
 import { JwtAuthGuard } from '@src/auth/jwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { AuthenticatedRequest } from '@src/auth/types/jwt';
 
 @Controller('file')
 export class FileController {
@@ -36,11 +37,11 @@ export class FileController {
       }),
     )
     file: Express.Multer.File,
-    @Req() req,
+    @Req() req: AuthenticatedRequest,
     @Query('isPublic', new ParseBoolPipe({ optional: true })) isPublic = true,
     @Query('postId') postId?: string,
   ) {
-    const userId = req.user.userId;
+    const userId = req.user.sub;
     return await this.fileService.uploadFile(file, userId, isPublic, postId);
   }
 }

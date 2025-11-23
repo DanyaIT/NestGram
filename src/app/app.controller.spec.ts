@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { CacheModule } from '@src/cache/cache.module';
+// import { CacheModule } from '@src/cache/cache.module';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -13,7 +13,7 @@ describe('AppController', () => {
         ConfigModule.forRoot({
           isGlobal: true,
         }),
-        CacheModule,
+        // CacheModule,
       ],
       controllers: [AppController],
       providers: [AppService],

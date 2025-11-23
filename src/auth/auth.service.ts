@@ -30,7 +30,9 @@ export class AuthService {
     const isValidPassword = await bcrypt.compare(password, user.password);
 
     if (!isValidPassword) {
-      throw new UnauthorizedException('Неверные авторизационные данные, повторите еще раз');
+      throw new UnauthorizedException(
+        'Неверные авторизационные данные, повторите еще раз',
+      );
     }
 
     return this.generateToken(user);

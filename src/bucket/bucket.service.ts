@@ -1,15 +1,22 @@
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
 import { BucketUploadedFile, BucketUploadedFileReturn } from './types';
+import { EnvConfig } from '@src/app/types/env-config';
 
 @Injectable()
 export class BucketService {
   private client: S3Client;
-  private bucketName = this.configService.get('S3_BUCKET_NAME');
+  private bucketName: string;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(private readonly configService: ConfigService<EnvConfig>) {
+    this.bucketName = this.configService.get('S3_BUCKET_NAME');
     this.client = new S3Client({
       region: this.configService.get('S3_REGION'),
       endpoint: this.configService.get('S3_HOST'),
@@ -20,7 +27,10 @@ export class BucketService {
     });
   }
 
-  async uploadFile({ file, isPublic }: BucketUploadedFile): Promise<BucketUploadedFileReturn> {
+  async uploadFile({
+    file,
+    isPublic,
+  }: BucketUploadedFile): Promise<BucketUploadedFileReturn> {
     const key = `${uuidv4()}`;
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
@@ -68,6 +78,6 @@ export class BucketService {
       Key: key,
     });
 
-    this.client.send(command);
+    await this.client.send(command);
   }
 }

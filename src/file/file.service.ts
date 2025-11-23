@@ -9,7 +9,12 @@ export class FileService {
     private readonly prisma: PrismaService,
   ) {}
 
-  async uploadFile(file: Express.Multer.File, userId: string, isPublic: boolean, postId?: string) {
+  async uploadFile(
+    file: Express.Multer.File,
+    userId: string,
+    isPublic: boolean,
+    postId?: string,
+  ) {
     const { url, key } = await this.bucketService.uploadFile({ file, isPublic });
 
     return await this.prisma.file.create({
