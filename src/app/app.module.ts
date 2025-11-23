@@ -3,14 +3,16 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AppLoggerMiddleware } from './app.logger.middleware';
-import { CacheModule } from '@src/cache/cache.module';
+// import { CacheModule } from '@src/cache/cache.module';
 import { BucketModule } from '@src/bucket/bucket.module';
 import { PostsModule } from '@src/posts/posts.module';
 import { PrismaModule } from '@src/prisma';
-import { SentryModule } from '@src/sentry/sentry.module';
 import { UsersModule } from '@src/users/users.module';
 import { AuthModule } from '@src/auth/auth.module';
 import { FileModule } from '@src/file/file.module';
+import * as Joi from 'joi';
+
+const requiredString = Joi.string().required();
 
 @Module({
   imports: [
@@ -18,13 +20,21 @@ import { FileModule } from '@src/file/file.module';
       cache: true,
       isGlobal: true,
       envFilePath: ['.env'],
+      validationSchema: Joi.object({
+        S3_BUCKET_NAME: requiredString,
+        DATABASE_URL: requiredString,
+        S3_REGION: requiredString,
+        S3_HOST: requiredString,
+        S3_KEY: requiredString,
+        S3_SECRET: requiredString,
+        JWT_SECRET: requiredString,
+      }),
     }),
     AuthModule,
     UsersModule,
     FileModule,
     PrismaModule,
-    CacheModule,
-    SentryModule,
+    // CacheModule,
     PostsModule,
     BucketModule,
   ],

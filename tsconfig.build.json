@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "./tsconfig.json",
-  "includes": ["src", "generated"],
-  "exclude": ["node_modules", "test", "dist","**/*spec.ts"]
+  "includes": ["src"],
+  "exclude": ["src/runtime", "src/generated", "node_modules", "test", "dist","**/*spec.ts"]
 }

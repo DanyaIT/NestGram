@@ -1,0 +1,8 @@
+/node_modules/
+/build/
+/dist/
+/src/generated
+/src/runtime/
+/reports
+.scannerwork
+allure-setup.ts
