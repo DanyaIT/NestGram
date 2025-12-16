@@ -6,21 +6,51 @@ import {
   ParseFilePipe,
   Post,
   Query,
-  Req,
   UploadedFile,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileService } from './file.service';
-import { JwtAuthGuard } from '@src/auth/jwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { AuthenticatedRequest } from '@src/auth/types/jwt';
+import { ApiTags, ApiOperation, ApiConsumes, ApiBody, ApiQuery } from '@nestjs/swagger';
+import { User } from 'src/auth/decorators/user.decorator';
 
-@Controller('file')
+@Controller({ path: 'file', version: '1' })
+@ApiTags('File')
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'Upload file',
+    description: 'Upload file with max size 10MB. Formats: PNG, JPEG, JPG, SVG.',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'File for uploading',
+    required: true,
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @ApiQuery({
+    name: 'isPublic',
+    required: false,
+    type: Boolean,
+    description: 'Is pulic or not (true/false)',
+    example: true,
+  })
+  @ApiQuery({
+    name: 'postId',
+    required: false,
+    type: String,
+    description: 'Id of post',
+    example: 'clabc123def456',
+  })
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
@@ -37,11 +67,11 @@ export class FileController {
       }),
     )
     file: Express.Multer.File,
-    @Req() req: AuthenticatedRequest,
+
+    @User('sub') userId: string,
     @Query('isPublic', new ParseBoolPipe({ optional: true })) isPublic = true,
     @Query('postId') postId?: string,
   ) {
-    const userId = req.user.sub;
     return await this.fileService.uploadFile(file, userId, isPublic, postId);
   }
 }
