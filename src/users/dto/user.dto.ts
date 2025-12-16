@@ -7,11 +7,20 @@ import {
   Matches,
 } from 'class-validator';
 import { UserRole } from '@src/generated/prisma/client';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDto {
+  @ApiProperty({
+    description: "User's email address",
+    example: 'danilka@gmail.com',
+  })
   @IsEmail()
   email: string;
 
+  @ApiProperty({
+    description: 'Username',
+    example: 'Danilka',
+  })
   @IsString()
   @MinLength(3)
   @Matches(/^[a-zA-Z0-9_]+$/, {
@@ -19,10 +28,19 @@ export class CreateUserDto {
   })
   username: string;
 
+  @ApiProperty({
+    description: 'Password',
+    example: 'qwerty',
+  })
   @IsString()
   @MinLength(6)
   password: string;
 
+  @ApiProperty({
+    description: 'Role',
+    example: UserRole.USER,
+    required: false,
+  })
   @IsEnum(UserRole)
   @IsOptional()
   role?: UserRole;
