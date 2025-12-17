@@ -24,8 +24,11 @@ async function bootstrap(): Promise<void> {
       },
       'bearer',
     )
+    .addSecurityRequirements('bearer')
     .build();
+
   const document = SwaggerModule.createDocument(app, config);
+
   SwaggerModule.setup('api', app, document);
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(configService.get('PORT') || 3000);
