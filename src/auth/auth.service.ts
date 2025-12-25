@@ -3,8 +3,9 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '@src/users/users.service';
 import * as bcrypt from 'bcrypt';
 import { User } from '@src/generated/prisma/client';
-import { LoginDto } from './dto/login.dto';
+import { SignInDto } from './dto/signin.dto';
 import { CreateUserDto } from '@src/users/dto/user.dto';
+import { Request } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -14,14 +15,14 @@ export class AuthService {
   ) {}
 
   async signup(payload: CreateUserDto) {
-    const user: User = await this.userService.createUser(payload);
+    await this.userService.createUser(payload);
 
-    return this.generateToken(user);
+    return { success: true };
   }
 
-  async login(payload: LoginDto) {
+  async signin(payload: SignInDto, req: Request) {
     const { email, password } = payload;
-    const user = await this.userService.findOne(email);
+    const user = await this.userService.findOne({ email });
 
     if (!user) {
       throw new UnauthorizedException('Пользователя с такими данными не существует');
@@ -35,11 +36,16 @@ export class AuthService {
       );
     }
 
-    return this.generateToken(user);
+    await new Promise((res, rej) =>
+      req.login(user.id, err => (err ? rej(err) : res(true))),
+    );
+    const sid = req.sessionID;
+
+    return this.generateToken(user, sid);
   }
 
-  private generateToken(user: User) {
-    const payload = { sub: user.id, email: user.email };
+  private generateToken(user: User, sid: string) {
+    const payload = { sub: user.id, sid, email: user.email };
     return {
       access_token: this.jwtService.sign(payload),
     };

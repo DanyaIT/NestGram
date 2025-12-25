@@ -8,6 +8,7 @@ import { UsersModule } from '@src/users/users.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from './jwt.guard';
 import { APP_GUARD } from '@nestjs/core';
+import { SessionSerializer } from './session-serializer';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { APP_GUARD } from '@nestjs/core';
   providers: [
     AuthService,
     JwtStrategy,
+    SessionSerializer,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

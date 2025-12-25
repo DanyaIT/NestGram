@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class CacheTestResponseDoto {
+export class RedisTestResponseDTO {
   @ApiProperty()
   isWriteSuccess: boolean;
   @ApiProperty()
