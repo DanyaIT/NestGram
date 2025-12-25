@@ -1,7 +1,7 @@
 import { IsEmail, IsString, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class LoginDto {
+export class SignInDto {
   @ApiProperty({
     description: "User's email address",
     example: 'danilka@gmail.com',
