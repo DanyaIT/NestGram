@@ -5,14 +5,23 @@ import * as bcrypt from 'bcrypt';
 import { User } from '@src/generated/prisma/client';
 import { SignInDto } from './dto/signin.dto';
 import { CreateUserDto } from '@src/users/dto/user.dto';
-import { Request } from 'express';
+import { RedisService } from '@src/redis/redis.service';
+import { ConfigService } from '@nestjs/config';
+import { JwtPayload } from './types/jwt';
+import { ONE_HOUR_IN_MILLISECONDS } from '@src/shared/consts';
 
 @Injectable()
 export class AuthService {
+  private readonly secret: string;
+
   constructor(
-    private userService: UsersService,
-    private jwtService: JwtService,
-  ) {}
+    private readonly userService: UsersService,
+    private readonly jwtService: JwtService,
+    private readonly redisService: RedisService,
+    private readonly configService: ConfigService,
+  ) {
+    this.secret = this.configService.get<string>('JWT_SECRET');
+  }
 
   async signup(payload: CreateUserDto) {
     await this.userService.createUser(payload);
@@ -20,7 +29,7 @@ export class AuthService {
     return { success: true };
   }
 
-  async signin(payload: SignInDto, req: Request) {
+  async signin(payload: SignInDto) {
     const { email, password } = payload;
     const user = await this.userService.findOne({ email });
 
@@ -36,18 +45,79 @@ export class AuthService {
       );
     }
 
-    await new Promise((res, rej) =>
-      req.login(user.id, err => (err ? rej(err) : res(true))),
-    );
-    const sid = req.sessionID;
+    const accessSid = crypto.randomUUID();
+    await this.redisService.setJson(`session:${user.id}`, accessSid);
 
-    return this.generateToken(user, sid);
+    const refreshSid = crypto.randomUUID();
+    await this.redisService.setJson(
+      `refresh:${user.id}`,
+      refreshSid,
+      ONE_HOUR_IN_MILLISECONDS * 7,
+    );
+
+    return this.generateTokens(user, accessSid, refreshSid);
   }
 
-  private generateToken(user: User, sid: string) {
-    const payload = { sub: user.id, sid, email: user.email };
+  async logout(userId: string) {
+    await this.redisService.clear(`session:${userId}`);
+    await this.redisService.clear(`refresh:${userId}`);
+
+    return { success: true };
+  }
+
+  async refresh(refresh_token: string) {
+    const { sid } = this.jwtService.verify<JwtPayload>(refresh_token, {
+      secret: this.secret,
+    });
+
+    if (!sid) {
+      throw new UnauthorizedException('Refresh token is broken');
+    }
+
+    const { sub, email } = this.jwtService.verify<JwtPayload>(refresh_token, {
+      secret: this.secret,
+    });
+    const sidFromRedis = await this.redisService.getJson<string>(`refresh:${sub}`);
+
+    if (!sidFromRedis) {
+      throw new UnauthorizedException('Refresh token is expired');
+    }
+
+    const newSid = crypto.randomUUID();
+    await this.redisService.setJson(`session:${sub}`, newSid, 5000);
+
+    const access_token = this.jwtService.sign(
+      {
+        sub: sub,
+        sid: newSid,
+        email: email,
+      },
+      { secret: this.secret, expiresIn: '1d' },
+    );
+
+    return { access_token };
+  }
+
+  private generateTokens(user: User, accessSid: string, refreshSid: string) {
+    const secret = this.secret;
+    const { id: sub, email } = user;
+    const payload = { sub, email };
+
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: this.jwtService.sign(
+        { ...payload, sid: accessSid },
+        {
+          secret,
+          expiresIn: '1d',
+        },
+      ),
+      refresh_token: this.jwtService.sign(
+        { ...payload, sid: refreshSid },
+        {
+          secret,
+          expiresIn: '7d',
+        },
+      ),
     };
   }
 }

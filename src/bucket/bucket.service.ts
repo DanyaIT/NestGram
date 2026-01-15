@@ -6,7 +6,6 @@ import {
 } from '@aws-sdk/client-s3';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { v4 as uuidv4 } from 'uuid';
 import { BucketUploadedFile, BucketUploadedFileReturn } from './types';
 import { EnvConfig } from '@src/app/types/env-config';
 
@@ -31,7 +30,7 @@ export class BucketService {
     file,
     isPublic,
   }: BucketUploadedFile): Promise<BucketUploadedFileReturn> {
-    const key = `${uuidv4()}`;
+    const key = `${crypto.randomUUID()}`;
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
       Key: key,
