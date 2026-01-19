@@ -30,7 +30,7 @@ export class RedisService implements OnApplicationShutdown {
     value: T,
     expireMs = 84600_000,
   ): Promise<void> {
-    await this.redisClient.set(key, JSON.stringify(value), 'EX', expireMs);
+    await this.redisClient.set(key, JSON.stringify(value), 'PX', expireMs);
   }
 
   async clear(key: string): Promise<void> {
