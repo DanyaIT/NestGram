@@ -13,6 +13,9 @@ import { EnvConfig } from '@src/app/types/env-config';
       useFactory: (config: ConfigService<EnvConfig>) => {
         return new Redis({
           password: config.get<string>('REDIS_PASSWORD'),
+          username: config.get<string>('REDIS_USERNAME'),
+          host: config.get<string>('REDIS_HOST'),
+          port: Number(config.get<string>('REDIS_PORT')),
         });
       },
       inject: [ConfigService],
