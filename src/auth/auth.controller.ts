@@ -49,15 +49,17 @@ export class AuthController {
 
     res.cookie('access_token', access_token, {
       httpOnly: true,
+      domain: '.traefik.me',
       // secure: process.env.NODE_ENV === 'production', //TODO: fix
-      sameSite: 'lax',
+      sameSite: 'none', //TODO: fix
       maxAge: ONE_HOUR_IN_MILLISECONDS,
     });
 
     res.cookie('refresh_token', refresh_token, {
       httpOnly: true,
+      domain: '.traefik.me',
       // secure: process.env.NODE_ENV === 'production', //TODO: fix
-      sameSite: 'lax',
+      sameSite: 'none', //TODO: fix
       maxAge: ONE_HOUR_IN_MILLISECONDS * 7,
     });
 
