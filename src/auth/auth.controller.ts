@@ -51,7 +51,7 @@ export class AuthController {
       httpOnly: true,
       domain: '.traefik.me',
       // secure: process.env.NODE_ENV === 'production', //TODO: fix
-      sameSite: 'none', //TODO: fix
+      sameSite: 'lax',
       maxAge: ONE_HOUR_IN_MILLISECONDS,
     });
 
@@ -59,7 +59,7 @@ export class AuthController {
       httpOnly: true,
       domain: '.traefik.me',
       // secure: process.env.NODE_ENV === 'production', //TODO: fix
-      sameSite: 'none', //TODO: fix
+      sameSite: 'lax',
       maxAge: ONE_HOUR_IN_MILLISECONDS * 7,
     });
 
