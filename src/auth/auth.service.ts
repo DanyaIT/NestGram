@@ -2,13 +2,13 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '@src/users/users.service';
 import * as bcrypt from 'bcrypt';
-import { User } from '@src/generated/prisma/client';
 import { SignInDto } from './dto/signin.dto';
 import { CreateUserDto } from '@src/users/dto/user.dto';
 import { RedisService } from '@src/redis/redis.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from './types/jwt';
 import { ONE_HOUR_IN_MILLISECONDS } from '@src/shared/consts';
+import { User } from 'prisma/generated/client';
 
 @Injectable()
 export class AuthService {

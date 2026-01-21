@@ -19,10 +19,10 @@ const requiredString = Joi.string().required();
     ConfigModule.forRoot({
       cache: true,
       isGlobal: true,
-      envFilePath: ['.env'],
+      envFilePath: ['.env', `.env.${process.env.NODE_ENV}`],
       validationSchema: Joi.object({
         S3_BUCKET_NAME: requiredString,
-        DATABASE_URL: requiredString,
+        POSTGRES_URI: requiredString,
         S3_REGION: requiredString,
         S3_HOST: requiredString,
         S3_KEY: requiredString,

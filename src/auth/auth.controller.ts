@@ -50,15 +50,17 @@ export class AuthController {
     res.cookie('access_token', access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'none',
       maxAge: ONE_HOUR_IN_MILLISECONDS,
+      domain: '.imagify.tech',
     });
 
     res.cookie('refresh_token', refresh_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'none',
       maxAge: ONE_HOUR_IN_MILLISECONDS * 7,
+      domain: '.imagify.tech',
     });
 
     return { success: true };
