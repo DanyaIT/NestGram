@@ -52,6 +52,7 @@ export class AuthController {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'none',
       maxAge: ONE_HOUR_IN_MILLISECONDS,
+      domain: '.imagify.tech',
     });
 
     res.cookie('refresh_token', refresh_token, {
@@ -59,6 +60,7 @@ export class AuthController {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'none',
       maxAge: ONE_HOUR_IN_MILLISECONDS * 7,
+      domain: '.imagify.tech',
     });
 
     return { success: true };
