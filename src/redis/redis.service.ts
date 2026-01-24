@@ -1,4 +1,5 @@
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { ONE_HOUR_IN_MILLISECONDS } from '@src/shared/consts';
 import Redis from 'ioredis';
 
 @Injectable()
@@ -28,7 +29,7 @@ export class RedisService implements OnApplicationShutdown {
   async setJson<T = Record<string, unknown>>(
     key: string,
     value: T,
-    expireMs = 84600_000,
+    expireMs = ONE_HOUR_IN_MILLISECONDS,
   ): Promise<void> {
     await this.redisClient.set(key, JSON.stringify(value), 'PX', expireMs);
   }

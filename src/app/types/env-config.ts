@@ -1,5 +1,6 @@
 export interface EnvConfig {
   ALLOWED_ORIGIN: string;
+  DOMAIN: string;
   POSTGRES_URI: string;
   REDIS_PASSWORD: string;
   REDIS_USERNAME: string;
