@@ -1,13 +1,16 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '@src/users/users.service';
+import { UserService } from '@src/user/user.service';
 import * as bcrypt from 'bcrypt';
 import { SignInDto } from './dto/signin.dto';
-import { CreateUserDto } from '@src/users/dto/user.dto';
+import { CreateUserDto } from '@src/user/dto/user.dto';
 import { RedisService } from '@src/redis/redis.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from './types/jwt';
-import { ONE_HOUR_IN_MILLISECONDS } from '@src/shared/consts';
+import {
+  ONE_WEEK_IN_MILLISECONDS,
+  THIFTEEN_MINUTES_IN_MILLISECONDS,
+} from '@src/shared/consts';
 import { User } from 'prisma/generated/client';
 
 @Injectable()
@@ -15,7 +18,7 @@ export class AuthService {
   private readonly secret: string;
 
   constructor(
-    private readonly userService: UsersService,
+    private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly redisService: RedisService,
     private readonly configService: ConfigService,
@@ -46,13 +49,17 @@ export class AuthService {
     }
 
     const accessSid = crypto.randomUUID();
-    await this.redisService.setJson(`session:${user.id}`, accessSid);
+    await this.redisService.setJson(
+      `session:${user.id}`,
+      accessSid,
+      THIFTEEN_MINUTES_IN_MILLISECONDS,
+    );
 
     const refreshSid = crypto.randomUUID();
     await this.redisService.setJson(
       `refresh:${user.id}`,
       refreshSid,
-      ONE_HOUR_IN_MILLISECONDS * 7,
+      ONE_WEEK_IN_MILLISECONDS,
     );
 
     return this.generateTokens(user, accessSid, refreshSid);
@@ -84,7 +91,11 @@ export class AuthService {
     }
 
     const newSid = crypto.randomUUID();
-    await this.redisService.setJson(`session:${sub}`, newSid, 5000);
+    await this.redisService.setJson(
+      `session:${sub}`,
+      newSid,
+      THIFTEEN_MINUTES_IN_MILLISECONDS,
+    );
 
     const access_token = this.jwtService.sign(
       {
@@ -92,7 +103,7 @@ export class AuthService {
         sid: newSid,
         email: email,
       },
-      { secret: this.secret, expiresIn: '1d' },
+      { secret: this.secret, expiresIn: '15Min' },
     );
 
     return { access_token };
@@ -108,7 +119,7 @@ export class AuthService {
         { ...payload, sid: accessSid },
         {
           secret,
-          expiresIn: '1d',
+          expiresIn: '15Min',
         },
       ),
       refresh_token: this.jwtService.sign(

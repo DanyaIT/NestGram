@@ -4,10 +4,18 @@ import { ConfigService } from '@nestjs/config';
 import { VERSION_NEUTRAL, ValidationPipe, VersioningType } from '@nestjs/common';
 import { AppModule } from './app/app.module';
 import * as cookieParser from 'cookie-parser';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import helmet from 'helmet';
+import { getHelmetConfig } from './configs';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
+
+  app.set('trust proxy', true);
+
+  app.use(helmet(getHelmetConfig()));
+
   app.use(cookieParser());
 
   app.enableCors({

@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from '@src/users/dto/user.dto';
+import { CreateUserDto } from '@src/user/dto/user.dto';
 import { SignInDto } from './dto/signin.dto';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { isPublic } from 'src/auth/decorators/public.decorator';
@@ -18,12 +18,20 @@ import { SignInResponseDto } from './dto/signin-response.dto';
 import { SignUpResponseDto } from './dto/signup-response.dto';
 import { ValidateResponseDto } from './dto/validate.response.dto';
 import { JwtPayload } from './types/jwt';
-import { ONE_HOUR_IN_MILLISECONDS } from '@src/shared/consts';
+import {
+  ONE_WEEK_IN_MILLISECONDS,
+  THIFTEEN_MINUTES_IN_MILLISECONDS,
+} from '@src/shared/consts';
+import { ConfigService } from '@nestjs/config';
+import { EnvConfig } from '@src/app/types/env-config';
 
 @Controller({ path: 'auth', version: '1' })
 @ApiTags('Auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService<EnvConfig>,
+  ) {}
 
   @isPublic()
   @Post('signup')
@@ -38,7 +46,7 @@ export class AuthController {
   @isPublic()
   @Post('signin')
   @ApiResponse({
-    status: HttpStatus.CREATED,
+    status: HttpStatus.OK,
     type: SignInResponseDto,
   })
   async signin(
@@ -50,17 +58,17 @@ export class AuthController {
     res.cookie('access_token', access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
-      maxAge: ONE_HOUR_IN_MILLISECONDS,
-      domain: '.imagify.tech',
+      sameSite: 'lax',
+      maxAge: THIFTEEN_MINUTES_IN_MILLISECONDS,
+      domain: this.configService.get<string>('DOMAIN'),
     });
 
     res.cookie('refresh_token', refresh_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
-      maxAge: ONE_HOUR_IN_MILLISECONDS * 7,
-      domain: '.imagify.tech',
+      sameSite: 'lax',
+      maxAge: ONE_WEEK_IN_MILLISECONDS,
+      domain: this.configService.get<string>('DOMAIN'),
     });
 
     return { success: true };
@@ -85,7 +93,7 @@ export class AuthController {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: ONE_HOUR_IN_MILLISECONDS,
+      maxAge: THIFTEEN_MINUTES_IN_MILLISECONDS,
     });
   }
 
@@ -98,11 +106,7 @@ export class AuthController {
     @Req() req: Request & { user: JwtPayload },
     @Res({ passthrough: true }) res: Response,
   ) {
-    if (!req?.user) {
-      return { success: true };
-    }
-
-    await this.authService.logout(req.user.sub);
+    await this.authService.logout(req?.user?.sub);
     res.clearCookie('access_token');
     res.clearCookie('refresh_token');
 
