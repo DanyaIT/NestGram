@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from '@src/user/dto/user.dto';
+import { CreateUserDto } from '@src/user/dto/create-user-request.dto';
 import { SignInDto } from './dto/signin.dto';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { isPublic } from 'src/auth/decorators/public.decorator';

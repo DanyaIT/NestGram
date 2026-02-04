@@ -10,7 +10,7 @@ export class PostController {
   constructor(private readonly postsService: PostService) {}
 
   @Post()
-  create(@Body() createPostDto: CreatePostRequestDto, @User('sub') userId: string) {
-    return this.postsService.create(createPostDto, userId);
+  async create(@Body() createPostDto: CreatePostRequestDto, @User('sub') userId: string) {
+    return await this.postsService.create(createPostDto, userId);
   }
 }
