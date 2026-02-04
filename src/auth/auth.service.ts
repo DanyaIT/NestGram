@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from '@src/user/user.service';
 import * as bcrypt from 'bcrypt';
 import { SignInDto } from './dto/signin.dto';
-import { CreateUserDto } from '@src/user/dto/user.dto';
+import { CreateUserDto } from '@src/user/dto/create-user-request.dto';
 import { RedisService } from '@src/redis/redis.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from './types/jwt';
@@ -34,7 +34,7 @@ export class AuthService {
 
   async signin(payload: SignInDto) {
     const { email, password } = payload;
-    const user = await this.userService.findOne({ email });
+    const user = await this.userService.getUser({ email });
 
     if (!user) {
       throw new UnauthorizedException('Пользователя с такими данными не существует');
