@@ -23,7 +23,7 @@ const config: runtime.GetPrismaClientConfig = {
       "value": "prisma-client"
     },
     "output": {
-      "value": "/home/danya/repos/nest-bff/prisma/generated",
+      "value": "/Users/ocheretindaniil/repos/NestGram/prisma/generated",
       "fromEnvVar": null
     },
     "config": {
@@ -33,12 +33,12 @@ const config: runtime.GetPrismaClientConfig = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "debian-openssl-3.0.x",
+        "value": "darwin-arm64",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/danya/repos/nest-bff/prisma/schema.prisma",
+    "sourceFilePath": "/Users/ocheretindaniil/repos/NestGram/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativePath": "..",
@@ -48,6 +48,7 @@ const config: runtime.GetPrismaClientConfig = {
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": true,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -56,8 +57,8 @@ const config: runtime.GetPrismaClientConfig = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider     = \"prisma-client\"\n  output       = \"./generated\"\n  moduleForman = \"cjs\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"POSTGRES_URI\")\n}\n\nmodel User {\n  id       String   @id @default(cuid())\n  email    String   @unique\n  username String   @unique\n  password String\n  role     UserRole @default(USER)\n\n  // Relations\n  posts    Post[]\n  comments Comment[]\n  likes    Like[]\n\n  files    File[]  @relation(\"UserFiles\")\n  avatar   File?   @relation(\"UserAvatar\", fields: [avatarId], references: [id])\n  avatarId String? @unique\n\n  // Timestamps\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"users\")\n}\n\nmodel Post {\n  id        String  @id @default(cuid())\n  title     String\n  content   String\n  published Boolean @default(false)\n\n  // Relations\n  author   User      @relation(fields: [authorId], references: [id])\n  authorId String\n  comments Comment[]\n  likes    Like[]\n  images   File[]    @relation(\"PostImages\")\n\n  // Timestamps\n  createdAt   DateTime  @default(now())\n  updatedAt   DateTime  @updatedAt\n  publishedAt DateTime?\n\n  @@map(\"posts\")\n}\n\nmodel Comment {\n  id       String  @id @default(cuid())\n  content  String\n  approved Boolean @default(true)\n\n  // Relations\n  author   User   @relation(fields: [authorId], references: [id])\n  authorId String\n\n  post   Post   @relation(fields: [postId], references: [id])\n  postId String\n\n  parent   Comment?  @relation(\"CommentReplies\", fields: [parentId], references: [id])\n  parentId String?\n  replies  Comment[] @relation(\"CommentReplies\")\n\n  likes Like[]\n\n  // Timestamps\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"comments\")\n}\n\nmodel Like {\n  id String @id @default(cuid())\n\n  // Relations\n  user   User   @relation(fields: [userId], references: [id])\n  userId String\n\n  post   Post?   @relation(fields: [postId], references: [id])\n  postId String?\n\n  comment   Comment? @relation(fields: [commentId], references: [id])\n  commentId String?\n\n  // Timestamps\n  createdAt DateTime @default(now())\n\n  // Уникальный индекс чтобы пользователь мог лайкнуть пост/комментарий только один раз\n  @@unique([userId, postId, commentId])\n  @@map(\"likes\")\n}\n\nmodel File {\n  id           String  @id @default(cuid())\n  key          String  @unique\n  url          String\n  originalName String\n  mimeType     String\n  size         Int\n  isPublic     Boolean\n\n  //Relations\n  uploader   User?   @relation(\"UserFiles\", fields: [uploaderId], references: [id])\n  uploaderId String?\n  avatarOf   User?   @relation(\"UserAvatar\")\n\n  post   Post?   @relation(\"PostImages\", fields: [postId], references: [id])\n  postId String?\n\n  createdAt DateTime @default(now())\n\n  @@map(\"files\")\n}\n\nenum UserRole {\n  USER\n  EDITOR\n  ADMIN\n}\n",
-  "inlineSchemaHash": "f32be0fa0a394b465d1210afcd5a6b3e7835dcfbdf542d8b1b981790a547388a",
+  "inlineSchema": "generator client {\n  provider     = \"prisma-client\"\n  output       = \"./generated\"\n  moduleForman = \"cjs\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"POSTGRES_URI\")\n}\n\nmodel User {\n  id       String   @id @default(cuid())\n  email    String   @unique\n  username String   @unique\n  password String\n  role     UserRole @default(USER)\n\n  posts    Post[]\n  comments Comment[]\n  likes    Like[]\n\n  files    File[]  @relation(\"UserFiles\")\n  avatar   File?   @relation(\"UserAvatar\", fields: [avatarId], references: [id])\n  avatarId String? @unique\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"users\")\n}\n\nmodel Post {\n  id        String  @id @default(cuid())\n  title     String\n  content   String\n  published Boolean @default(false)\n\n  author   User      @relation(fields: [authorId], references: [id])\n  authorId String\n  comments Comment[]\n  likes    Like[]\n  images   File[]    @relation(\"PostImages\")\n\n  createdAt   DateTime  @default(now())\n  updatedAt   DateTime  @updatedAt\n  publishedAt DateTime?\n\n  @@map(\"posts\")\n}\n\nmodel Comment {\n  id       String  @id @default(cuid())\n  content  String\n  approved Boolean @default(true)\n\n  author   User   @relation(fields: [authorId], references: [id])\n  authorId String\n\n  post   Post   @relation(fields: [postId], references: [id])\n  postId String\n\n  parent   Comment?  @relation(\"CommentReplies\", fields: [parentId], references: [id])\n  parentId String?\n  replies  Comment[] @relation(\"CommentReplies\")\n\n  likes Like[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"comments\")\n}\n\nmodel Like {\n  id String @id @default(cuid())\n\n  user   User   @relation(fields: [userId], references: [id])\n  userId String\n\n  post   Post?   @relation(fields: [postId], references: [id])\n  postId String?\n\n  comment   Comment? @relation(fields: [commentId], references: [id])\n  commentId String?\n\n  createdAt DateTime @default(now())\n\n  // Уникальный индекс чтобы пользователь мог лайкнуть пост/комментарий только один раз\n  @@unique([userId, postId, commentId])\n  @@map(\"likes\")\n}\n\nmodel File {\n  id           String  @id @default(cuid())\n  key          String  @unique\n  url          String\n  originalName String\n  mimeType     String\n  size         Int\n  isPublic     Boolean\n\n  uploader   User?   @relation(\"UserFiles\", fields: [uploaderId], references: [id])\n  uploaderId String?\n  avatarOf   User?   @relation(\"UserAvatar\")\n\n  post   Post?   @relation(\"PostImages\", fields: [postId], references: [id])\n  postId String?\n\n  createdAt DateTime @default(now())\n\n  @@map(\"files\")\n}\n\nenum UserRole {\n  USER\n  EDITOR\n  ADMIN\n}\n",
+  "inlineSchemaHash": "907d803e4d47d3354b71b1a4b7795b686c20c692bfc6b25c8452dca7fdc23cd7",
   "copyEngine": true,
   "runtimeDataModel": {
     "models": {},
